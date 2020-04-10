@@ -84,6 +84,11 @@ class ObserverRadio(Radio):
         if isinstance(observer, Observer):
             self.receive_observers.append(observer)
             self.send_observers.append(observer)
+    
+    def remove_observer(self, observer):
+        if isinstance(observer, Observer):
+            self.receive_observers.remove(observer)
+            self.send_observers.remove(observer)
 
     def avg_send(self):
         return self.radio.avg_send
