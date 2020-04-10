@@ -27,7 +27,7 @@ def is_data_frame(frame):
     if frame is None:
         return False
 
-    if Dot15d4Cmd in frame and frame[Dot15d4Cmd].fcf_frametype==1:
+    if Dot15d4Data in frame and frame[Dot15d4].fcf_frametype==1:
         return True
 
     return False

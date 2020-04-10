@@ -25,8 +25,8 @@ from zigdiggity.packets.dot15d4 import is_data_frame
 RESPONSE_TIME_LIMIT = 1 # 1s
 OBSERVATION_TIME = 30 # 30s
 NUMBER_OF_ATTEMPTS = 3
-THRESHOLD_VARIANCE = 0.005
-MIN_FREQUENCY = 2
+THRESHOLD_VARIANCE = 0.75
+MIN_FREQUENCY = 0.1
 
 def findLights(hardware_radio, radio, channel):
     radio.set_channel(channel)
@@ -38,6 +38,7 @@ def findLights(hardware_radio, radio, channel):
     
     result = []
     trackers = dict()
+    coordinators = dict()
     last_sequence_number = dict()
     if panid is not None:
         print_notify("Looking at PAN ID 0x%04x for locks" % panid)
@@ -49,7 +50,7 @@ def findLights(hardware_radio, radio, channel):
     while not timer.has_expired():
         frame = radio.receive()
         if frame is not None and not is_beacon_request(frame):
-            traffic_counter+=1
+            traffic_counter+=1  
         if is_data_frame(frame) and (panid is None or get_pan_id(frame)==panid):
             pan = get_pan_id(frame)
             source=get_source(frame)
@@ -63,17 +64,24 @@ def findLights(hardware_radio, radio, channel):
                 trackers[pan][source].click()
                 last_sequence_number[pan][source]=frame[Dot15d4FCS].seqnum
         
-        if timer.time_passed() > 5 and traffic_counter==0:
-            print_info("No traffic observed for 5 seconds, giving up")
+        if timer.time_passed() > 15 and traffic_counter==0:
+            print_info("No traffic observed for 15 seconds, giving up")
             break
+    print (trackers.keys())
+    print (last_sequence_number)
 
     for pan in trackers:
+        min_var = 1000
+        gateway = None
         for addr in trackers[pan]:
             watch = trackers[pan][addr]
-            if watch.variance() is not None and watch.variance() < THRESHOLD_VARIANCE and watch.mean() > MIN_FREQUENCY:
+            if watch.variance() is not None and watch.variance() < min_var:
+                min_var = watch.variance()
+                gateway = addr
                 result.append((pan,addr))
-                print_notify("Device 0x%04x on PAN 0x%04x resembles a gateway" % (addr, pan))
             print_debug("Device 0x%04x on PAN 0x%04x had variance of %f and mean of %f" % (addr,pan,watch.variance(),watch.mean()))
+        print_notify("Device 0x%04x on PAN 0x%04x resembles a gateway" % (gateway, pan))
+            # 
     
     # result = dict()
     # result[pan] = dict()
