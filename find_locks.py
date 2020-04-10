@@ -49,8 +49,7 @@ def findLights(hardware_radio, radio, channel):
         frame = radio.receive()
         if frame is not None and not is_beacon_request(frame):
             traffic_counter+=1
-            
-        if is_data_request(frame) and (panid is None or get_pan_id(frame)==panid):
+        if is_data_frame(frame) and (panid is None or get_pan_id(frame)==panid):
             pan = get_pan_id(frame)
             source=get_source(frame)
             if not pan in trackers.keys():
