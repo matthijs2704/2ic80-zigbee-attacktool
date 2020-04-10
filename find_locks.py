@@ -71,12 +71,14 @@ def findLights(hardware_radio, radio, channel):
     print (last_sequence_number)
 
     for pan in trackers:
-        min_var = 1000
+        min_var = 10000
+        max_mean = 1000
         gateway = None
         for addr in trackers[pan]:
             watch = trackers[pan][addr]
-            if watch.variance() is not None and watch.variance() < min_var:
+            if watch.variance() is not None and abs(watch.variance()-watch.mean()) > min_var:
                 min_var = watch.variance()
+                max_mean = watch.mean()
                 gateway = addr
                 result.append((pan,addr))
             print_debug("Device 0x%04x on PAN 0x%04x had variance of %f and mean of %f" % (addr,pan,watch.variance(),watch.mean()))
