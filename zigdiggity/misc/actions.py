@@ -1,6 +1,6 @@
 from zigdiggity.packets.nwk_commands import insecure_rejoin, is_rejoin_response
 from zigdiggity.packets.aps import is_transport_key
-from zigdiggity.packets.dot15d4 import data_request, beacon_request, beacon_response, is_beacon_response, is_beacon_request, is_data_request
+from zigdiggity.packets.dot15d4 import data_request, beacon_request, beacon_response, is_beacon_response, is_beacon_request, is_data_request, is_data_frame
 from zigdiggity.packets.zcl import encrypted_unlock, encrypted_toggle
 from zigdiggity.packets.utils import get_extended_source, get_source, extended_pan, extended_address_bytes, get_pan_id, get_frame_counter
 from zigdiggity.misc.timer import Timer

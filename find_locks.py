@@ -20,6 +20,7 @@ from zigdiggity.interface.console import *
 from zigdiggity.interface.components.logo import Logo
 import zigdiggity.crypto.utils as crypto_utils
 from zigdiggity.misc.actions import *
+from zigdiggity.packets.dot15d4 import is_data_frame
   
 RESPONSE_TIME_LIMIT = 1 # 1s
 OBSERVATION_TIME = 30 # 30s
