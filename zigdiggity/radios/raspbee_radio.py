@@ -60,48 +60,68 @@ class RaspbeeRadio(Radio):
         return self._process_receive()
 
     def _process_receive(self):
-        length = self.serial.read()
-        if len(length) > 0:
-            intLength = int.from_bytes(length, "big")
+        try:
+            length = self.serial.read()
+            print("Receive Length:", length)
+            if len(length) > 0:
+                # intLength = int.from_bytes(length, "big")
+                #length_bytes = bytes(str(length).encode('utf-8'))
+                if (len(length) == 1):
+                    intLength = ord(length)
+                else:
+                    intLength = struct.unpack('>i', length)[0]
 
-            if intLength > 127:
-                if intLength == 0xff:
-                    next_byte = self.serial.read()
-                    if len(next_byte) > 0:
-                        next_length = int.from_bytes(next_byte, "big")
-                        message = self.serial.read(next_length)
-                        print("DEBUG: " + str(message))
-                elif intLength == 0xf0:
-                    rssi = self.serial.read()
-                    next_length = self.serial.read()
-                    next_length_int = int.from_bytes(next_length, "big")
-                    packet = self.serial.read(next_length_int)
-                    if next_length_int < 2:
-                        return None
+                if intLength > 127:
+                    if intLength == 0xff:
+                        next_byte = self.serial.read()
+                        if len(next_byte) > 0:
+                            if (len(next_byte) == 1):
+                                # next_length = int.from_bytes(next_byte, "big")
+                                next_length = ord(next_byte)
+                            else:
+                                # next_length = int.from_bytes(next_byte, "big")
+                                next_length = struct.unpack('>i', next_byte)[0]
+                            message = self.serial.read(next_length)
+                            print("DEBUG: " + str(message))
+                    elif intLength == 0xf0:
+                        rssi = self.serial.read()
+                        next_length = self.serial.read()
+                        # next_length_int = int.from_bytes(next_length, "big")
+                        if (len(next_length) == 1):
+                            # next_length = int.from_bytes(next_byte, "big")
+                            next_length_int = ord(next_length)
+                        else:
+                            # next_length = int.from_bytes(next_byte, "big")
+                            next_length_int = struct.unpack('>i', next_length)[0]
+                        packet = self.serial.read(next_length_int)
+                        if next_length_int < 2:
+                            return None
 
-                    if STATE_RX_WMETADATA:
-                        result = dict()
-                        result["rssi"]=rssi
-                        result["frame"]=Dot15d4FCS(packet)
-                        return result
-                    else:
-                        return None
-                return None
-            
-            recv_start = time.time()
-            packet = self.serial.read(intLength)
-            recv_end = time.time()
-            self.add_recv_time(recv_end - recv_start)
-            
-            if intLength <= 2:
-                return None
-            
-            if self.state==STATE_RX_WMETADATA:
-                return None
+                        if STATE_RX_WMETADATA:
+                            result = dict()
+                            result["rssi"]=rssi
+                            result["frame"]=Dot15d4FCS(packet)
+                            return result
+                        else:
+                            return None
+                    return None
 
-            return Dot15d4FCS(packet)
-        else:
-            return None
+                recv_start = time.time()
+                packet = self.serial.read(intLength)
+                recv_end = time.time()
+                self.add_recv_time(recv_end - recv_start)
+
+                if intLength <= 2:
+                    return None
+
+                if self.state==STATE_RX_WMETADATA:
+                    return None
+
+                return Dot15d4FCS(packet)
+            else:
+                return None
+        except serial.serialutil.SerialException as se:
+            pass
 
     def send(self, packet):
         if not Dot15d4FCS in packet:
@@ -144,4 +164,3 @@ class RaspbeeRadio(Radio):
             self.serial.write(bytearray(struct.pack("B",CMD_RX_WMETADATA)))
             self.state = STATE_RX_WMETADATA
         return self._process_receive()
-        
