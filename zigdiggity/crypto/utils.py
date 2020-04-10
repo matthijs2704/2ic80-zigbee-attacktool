@@ -9,6 +9,7 @@ import struct
 conf.dot15d4_protocol = 'zigbee'
 
 DEFAULT_TRANSPORT_KEY = b'ZigBeeAlliance09'
+DEFAULT_ZLL_COMMISSION_KEY = 0x814286865dc1c8b2c8cbc52e5d65d1b8
 
 BLOCK_SIZE = 16
 MIC_SIZE = 4

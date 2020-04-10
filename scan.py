@@ -21,6 +21,7 @@ def scanChannels(hardware_radio, radio):
     CHANNELS = [11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]
     pbar = tqdm(CHANNELS)
     
+    channels_in_use = []
     for channel in pbar:
         radio.set_channel(channel)
 
@@ -28,7 +29,12 @@ def scanChannels(hardware_radio, radio):
 
         timer = Timer(10)
         while(not timer.has_expired()):    
-            if radio.receive() is not None:
+            frame = radio.receive()
+            if frame is not None:
                 tqdm.write(Color.s("{+} Found traffic on channel %d" % channel))
+                channels_in_use.append(channel)
+                time.sleep(1)
                 break
+                
         pbar.update()
+    return channels_in_use

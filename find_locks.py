@@ -20,101 +20,90 @@ from zigdiggity.interface.console import *
 from zigdiggity.interface.components.logo import Logo
 import zigdiggity.crypto.utils as crypto_utils
 from zigdiggity.misc.actions import *
+from zigdiggity.packets.dot15d4 import is_data_frame
+  
+RESPONSE_TIME_LIMIT = 1 # 1s
+OBSERVATION_TIME = 30 # 30s
+NUMBER_OF_ATTEMPTS = 3
+THRESHOLD_VARIANCE = 0.75
+MIN_FREQUENCY = 0.1
 
-class NumberValidator(Validator):
-    def validate(self, document):
-        try:
-            int(document.text)
-        except ValueError:
-            raise ValidationError(
-                message='Please enter a number',
-                cursor_position=len(document.text))  # Move cursor to end
-             
-logo = Logo()
-logo.print()
-
-print_info("Welcome to the Zigbee Lighting Link (Ikea Tradfri) Hacking tool!")
-print_info("By group 102 for Lab on offenive Computer Security.")
-questions = [
-    {
-        'type': 'list',
-        'name': 'command',
-        'message': 'Choose somtething to do',
-        'choices': [
-            '1. Scan for Zigbee Networks', 
-            '2. Extract key on device join', 
-            '3. Spoof the gateway (toggle light)'
-            ],
-    },
-    {
-        'type': 'input',
-        'name': 'channel',
-        'message': 'Enter the Zigbee Channel to use:',
-        'validate': NumberValidator,
-        'filter': lambda val: int(val)
-    },
-    {
-        'type': 'confirm',
-        'name': 'wireshark',
-        'message': 'Use Wireshark?',
-        'default': False,
-    }
-]
-
-answers = prompt(questions)
-print_json(answers)  # use the answers as input for your app
-
-hardware_radio = RaspbeeRadio(args.device)
-radio = ObserverRadio(hardware_radio)
-
-if args.wireshark:
-    wireshark = WiresharkObserver()
-    radio.add_observer(wireshark)
-
-radio.set_channel(args.channel)
-
-print_notify("Sending beacon on on channel %d" % args.channel)
-
-panid = None
-extended_panid = None
-
-coordinators = dict()
-
-extended_panids = dict()
-last_sequence_number = dict()
-if panid is not None:
-    print_notify("Looking at PAN ID 0x%04x for lights" % panid)
-else:
-    print_notify("Looking for lights on the current channel")
-print_info("Monitoring the network for an extended period")
-timer = Timer(17)
-traffic_counter = 0
-radio.receive()
-radio.send_and_retry(beacon_request(random.randint(0,255)))
-while not timer.has_expired():
-    frame = radio.receive()
-    if frame is not None and not is_beacon_request(frame):
-        traffic_counter+=1
-    if is_beacon_response(frame) and (panid is None or get_pan_id(frame)==panid):
-        pan = get_pan_id(frame)
-        source=get_source(frame)
-        if not pan in coordinators.keys():
-            print_info("Finding coordinator on 0x%04x" % pan)
-            coord_addr = find_coord_addr_by_panid(radio, pan)
-            coordinators[pan] = coord_addr
-            extended_panids[pan] = frame[ZigBeeBeacon].extended_pan_id
-            print_info("Coordinator of 0x%04x is possibly 0x%04x" % (pan, coord_addr))
-            last_sequence_number[pan] = dict()
-        if not source in last_sequence_number[pan]:
-            last_sequence_number[pan][source]=-1
-        if last_sequence_number[pan][source]!=frame[Dot15d4FCS].seqnum:
-            last_sequence_number[pan][source]=frame[Dot15d4FCS].seqnum
+def findLights(hardware_radio, radio, channel):
+    radio.set_channel(channel)
     
-    if timer.time_passed() > 5 and traffic_counter==0:
-        print_info("No traffic observed for 5 seconds, giving up")
-        break
+    print_notify("Sending beacon on on channel %d" % radio.get_channel())
+    
+    panid = None
+    extended_panid = None
+    
+    result = []
+    trackers = dict()
+    coordinators = dict()
+    last_sequence_number = dict()
+    if panid is not None:
+        print_notify("Looking at PAN ID 0x%04x for locks" % panid)
+    else:
+        print_notify("Looking for locks on the current channel")
+    print_info("Monitoring the network for an extended period")
+    timer = Timer(17)
+    traffic_counter = 0
+    while not timer.has_expired():
+        frame = radio.receive()
+        if frame is not None and not is_beacon_request(frame):
+            traffic_counter+=1  
+        if is_data_frame(frame) and (panid is None or get_pan_id(frame)==panid):
+            pan = get_pan_id(frame)
+            source=get_source(frame)
+            if not pan in trackers.keys():
+                trackers[pan] = dict()
+                last_sequence_number[pan] = dict()
+            if not source in trackers[pan].keys():
+                trackers[pan][source]=TrackWatch()
+                last_sequence_number[pan][source]=-1
+            if last_sequence_number[pan][source]!=frame[Dot15d4FCS].seqnum:
+                trackers[pan][source].click()
+                last_sequence_number[pan][source]=frame[Dot15d4FCS].seqnum
+        
+        if timer.time_passed() > 15 and traffic_counter==0:
+            print_info("No traffic observed for 15 seconds, giving up")
+            break
+    print (trackers.keys())
+    print (last_sequence_number)
 
-print (coordinators)
-print (extended_panids)
-print (last_sequence_number)
-radio.off()
+    for pan in trackers:
+        min_var = 10000
+        max_mean = 1000
+        gateway = None
+        for addr in trackers[pan]:
+            watch = trackers[pan][addr]
+            if watch.variance() is not None and abs(watch.variance()-watch.mean()) > min_var:
+                min_var = watch.variance()
+                max_mean = watch.mean()
+                gateway = addr
+                result.append((pan,addr))
+            print_debug("Device 0x%04x on PAN 0x%04x had variance of %f and mean of %f" % (addr,pan,watch.variance(),watch.mean()))
+        print_notify("Device 0x%04x on PAN 0x%04x resembles a gateway" % (gateway, pan))
+            # 
+    
+    # result = dict()
+    # result[pan] = dict()
+    # result[pan]['last_sequence_number'] = last_sequence_number[pan]
+    # result[pan]['coordinator'] = coordinator[pan]
+    # result[pan]['extended_panid'] = extended_panids[pan]
+    # return result
+    # questions = [
+        # {
+            # 'type': 'list',
+            # 'name': 'command',
+            # 'message': 'Choose network to attack',
+            # 'choices': [hex(x) for x in coordinators.keys()],
+        # }
+    # ]
+    
+    # answers = prompt(questions)
+    # print_json(answers)  # use the answers as input for your app
+    # print (coordinators)
+    # print (extended_panids)
+    # print (last_sequence_number)
+    # radio.off()
+    

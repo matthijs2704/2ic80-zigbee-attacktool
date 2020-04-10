@@ -22,6 +22,16 @@ def is_beacon_request(frame):
 
     return False
 
+def is_data_frame(frame):
+
+    if frame is None:
+        return False
+
+    if Dot15d4Data in frame and frame[Dot15d4].fcf_frametype==1:
+        return True
+
+    return False
+
 def is_data_request(frame):
 
     if frame is None:
