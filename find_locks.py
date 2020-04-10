@@ -35,25 +35,21 @@ def findLights(hardware_radio, radio, channel):
     panid = None
     extended_panid = None
     
-    trackers = []
-    
-    devices = dict()
-    coordinators = dict()
-    extended_panids = dict()
+    result = []
+    trackers = dict()
     last_sequence_number = dict()
     if panid is not None:
-        print_notify("Looking at PAN ID 0x%04x for lights" % panid)
+        print_notify("Looking at PAN ID 0x%04x for locks" % panid)
     else:
-        print_notify("Looking for lights on the current channel")
+        print_notify("Looking for locks on the current channel")
     print_info("Monitoring the network for an extended period")
-    timer = Timer(OBSERVATION_TIME)
+    timer = Timer(17)
     traffic_counter = 0
-    #radio.receive()
-    #radio.send_and_retry(beacon_request(random.randint(0,255)))
     while not timer.has_expired():
         frame = radio.receive()
         if frame is not None and not is_beacon_request(frame):
             traffic_counter+=1
+            
         if is_data_request(frame) and (panid is None or get_pan_id(frame)==panid):
             pan = get_pan_id(frame)
             source=get_source(frame)
