@@ -21,6 +21,11 @@ from zigdiggity.interface.components.logo import Logo
 import zigdiggity.crypto.utils as crypto_utils
 from zigdiggity.misc.actions import *
   
+RESPONSE_TIME_LIMIT = 1 # 1s
+OBSERVATION_TIME = 30 # 30s
+NUMBER_OF_ATTEMPTS = 3
+THRESHOLD_VARIANCE = 0.005
+MIN_FREQUENCY = 2
 
 def findLights(hardware_radio, radio, channel):
     radio.set_channel(channel)
@@ -41,7 +46,7 @@ def findLights(hardware_radio, radio, channel):
     else:
         print_notify("Looking for lights on the current channel")
     print_info("Monitoring the network for an extended period")
-    timer = Timer(17)
+    timer = Timer(OBSERVATION_TIME)
     traffic_counter = 0
     #radio.receive()
     #radio.send_and_retry(beacon_request(random.randint(0,255)))
@@ -53,27 +58,33 @@ def findLights(hardware_radio, radio, channel):
             pan = get_pan_id(frame)
             source=get_source(frame)
             if not pan in trackers.keys():
-                trackers
-                coord_addr = find_coord_addr_by_panid(radio, pan)
-                coordinators[pan] = coord_addr
-                extended_panids[pan] = frame[ZigBeeBeacon].extended_pan_id
-                print_info("Coordinator of 0x%04x is possibly 0x%04x" % (pan, coord_addr))
+                trackers[pan] = dict()
                 last_sequence_number[pan] = dict()
-            if not source in last_sequence_number[pan]:
+            if not source in trackers[pan].keys():
+                trackers[pan][source]=TrackWatch()
                 last_sequence_number[pan][source]=-1
             if last_sequence_number[pan][source]!=frame[Dot15d4FCS].seqnum:
+                trackers[pan][source].click()
                 last_sequence_number[pan][source]=frame[Dot15d4FCS].seqnum
         
         if timer.time_passed() > 5 and traffic_counter==0:
             print_info("No traffic observed for 5 seconds, giving up")
             break
+
+    for pan in trackers:
+        for addr in trackers[pan]:
+            watch = trackers[pan][addr]
+            if watch.variance() is not None and watch.variance() < THRESHOLD_VARIANCE and watch.mean() > MIN_FREQUENCY:
+                result.append((pan,addr))
+                print_notify("Device 0x%04x on PAN 0x%04x resembles a gateway" % (addr, pan))
+            print_debug("Device 0x%04x on PAN 0x%04x had variance of %f and mean of %f" % (addr,pan,watch.variance(),watch.mean()))
     
-    result = dict()
-    result[pan] = dict()
-    result[pan]['last_sequence_number'] = last_sequence_number[pan]
-    result[pan]['coordinator'] = coordinator[pan]
-    result[pan]['extended_panid'] = extended_panids[pan]
-    return result
+    # result = dict()
+    # result[pan] = dict()
+    # result[pan]['last_sequence_number'] = last_sequence_number[pan]
+    # result[pan]['coordinator'] = coordinator[pan]
+    # result[pan]['extended_panid'] = extended_panids[pan]
+    # return result
     # questions = [
         # {
             # 'type': 'list',
