@@ -537,27 +537,21 @@ class ZigbeeAppDataPayload(Packet):
         BitEnumField("aps_frametype", 0, 2,
                      {0: 'data', 1: 'command', 2: 'ack'}),
         # Destination endpoint (0/1 octet)
-        ConditionalField(
-            ByteField("dst_endpoint", 10),
-            lambda pkt: (pkt.frame_control.ack_req or pkt.aps_frametype == 2)
-        ),
+         ConditionalField(
+             ByteField("dst_endpoint", 10),
+             lambda pkt: ((pkt.frame_control.ack_req or pkt.aps_frametype == 2) and pkt.delivery_mode != 3)
+         ),
         # Group address (0/2 octets) TODO
+        ConditionalField(
+            XLEShortField("group", 0x0005),
+            lambda pkt: (pkt.delivery_mode == 3)
+        ),
         # Cluster identifier (0/2 octets)
-        ConditionalField(
-            # unsigned short (little-endian)
-            EnumField("cluster", 0, _zcl_cluster_identifier, fmt="<H"),
-            lambda pkt: (pkt.frame_control.ack_req or pkt.aps_frametype == 2)
-        ),
+        EnumField("cluster", 0, _zcl_cluster_identifier, fmt="<H"),
         # Profile identifier (0/2 octets)
-        ConditionalField(
-            EnumField("profile", 0, _zcl_profile_identifier, fmt="<H"),
-            lambda pkt: (pkt.frame_control.ack_req or pkt.aps_frametype == 2)
-        ),
+        EnumField("profile", 0, _zcl_profile_identifier, fmt="<H"),
         # Source endpoint (0/1 octets)
-        ConditionalField(
-            ByteField("src_endpoint", 10),
-            lambda pkt: (pkt.frame_control.ack_req or pkt.aps_frametype == 2)
-        ),
+        ByteField("src_endpoint", 10),
         # APS counter (1 octet)
         ByteField("counter", 0),
         # Extended header (0/1/2 octets)
@@ -921,6 +915,7 @@ class ZigbeeClusterLibrary(Packet):
         ByteField("transaction_sequence", 0),
         # Command identifier (8 bits): the cluster command
         ByteEnumField("command_identifier", 0, _zcl_command_frames),
+        
     ]
 
     def guess_payload_class(self, payload):

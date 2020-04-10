@@ -62,7 +62,7 @@ class RaspbeeRadio(Radio):
     def _process_receive(self):
         try:
             length = self.serial.read()
-            print("Receive Length:", length)
+            #print("Receive Length:", length)
             if len(length) > 0:
                 # intLength = int.from_bytes(length, "big")
                 #length_bytes = bytes(str(length).encode('utf-8'))

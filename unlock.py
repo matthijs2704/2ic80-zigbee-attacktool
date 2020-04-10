@@ -53,7 +53,7 @@ if panid is None:
 print_notify("Scanning channel %d" % channel)
 
 for attempt in range(args.attempts):
-    if not unlock_lock(radio, panid, target_addr, NWK_KEY):
+    if not toggle_light(radio, panid, target_addr, NWK_KEY, 0x0304, 0xccccccfffebc091b ):
         panid = get_pan_by_extended_pan(radio, TARGET_EPAN)
     else:
         break

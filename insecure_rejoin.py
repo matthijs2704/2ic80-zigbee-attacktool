@@ -47,7 +47,7 @@ for channel in CHANNELS:
         exit(1)
 
     for attempt in range(args.attempts):
-        key = insecure_rejoin_by_panid(radio, panid, extended_src=0x01020304050607)
+        key = insecure_rejoin_by_panid(radio, panid, src_addr=0x7fe8, extended_src=0xccccccfffe5c4300, coord_addr=0x0304)
         if key is not None:
             break
 
