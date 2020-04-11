@@ -49,6 +49,17 @@ def is_data_request(frame):
     return False
 
 
+def is_ack(frame):
+
+    if frame is None:
+        return False
+
+    if Dot15d4Ack in frame:
+        return True
+
+    return False
+
+
 def dot15d4_cmd_stub(seq_num):
 
     dot15d4 = Dot15d4FCS()
