@@ -83,6 +83,47 @@ def prepare_attack(radio, channel, automated):
         else:
             print_error("Could not perform attack, not all data was present")
             return
+    else:
+        questions = [
+            {
+                'type': 'input',
+                'name': 'network',
+                'message': 'Choose network to attack',
+                'default': '0x',
+                'filter': lambda val: int(val, 16)
+            },
+            {
+                'type': 'input',
+                'name': 'coordinator',
+                'message': 'Choose network coordinator',
+                'default': '0x',
+                'filter': lambda val: int(val, 16)
+            },
+            {
+                'type': 'input',
+                'name': 'target',
+                'message': 'Choose device to attack',
+                'default': '0x',
+                'filter': lambda val: int(val, 16)
+            },
+            {
+                'type': 'input',
+                'name': 'nwk',
+                'message': 'Enter the network key (discovered from main option 2)',
+                'default': '2f:e6:44:cb:5a:00:84:6a:3a:11:bd:08:d4:16:cc:49',
+                'filter': lambda s: int(s.replace(':', ''), 16)
+            }
+        ]
+
+        answers = prompt(questions)
+        if 'network' in answers and 'target' in answers and 'nwk' in answers:
+            panid = answers['network']
+            target_addr = answers['target']
+            coord_addr = answers['coordinator']
+            nwk = answers['nwk']
+        else:
+            print_error("Could not perform attack, not all data was present")
+            return
 
     nwk_key = struct.pack(">QQ", nwk >> 64, nwk % (2**64))
     return (panid, target_addr, coord_addr, nwk_key)
