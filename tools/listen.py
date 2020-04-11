@@ -34,7 +34,6 @@ class ListenProg():
 
         print_notify("Listening to channel %d" % self.radio.get_channel())
 
-        signal.signal(signal.SIGINT, self.handle_interrupt)
         interrupted = False
 
         while True:
