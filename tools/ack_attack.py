@@ -1,27 +1,29 @@
 #!/usr/bin/env python
+from zigdiggity.interface.components.logo import Logo
+from zigdiggity.misc.actions import *
+from zigdiggity.observers.wireshark_observer import WiresharkObserver
+from zigdiggity.radios.observer_radio import ObserverRadio
+from zigdiggity.radios.raspbee_radio import RaspbeeRadio
+from scapy.layers.zigbee import *
+from scapy.layers.dot15d4 import *
+import argparse
+import signal
+import time
 import os
 import sys
 sys.path.append(os.getcwd() + "/zigdiggity")
 
-import time
-import signal
-import argparse
-from scapy.layers.dot15d4 import *
-from scapy.layers.zigbee import *
 
-from zigdiggity.radios.raspbee_radio import RaspbeeRadio
-from zigdiggity.radios.observer_radio import ObserverRadio
-from zigdiggity.observers.wireshark_observer import WiresharkObserver
-import zigdiggity.crypto.utils as crypto_utils
-from zigdiggity.misc.actions import *
-from zigdiggity.packets.utils import get_pan_id, get_source
-from zigdiggity.interface.components.logo import Logo
-
-parser = argparse.ArgumentParser(description='Perform an acknowledge attack against the target network')
-parser.add_argument('-c','--channel',action='store',type=int,dest='channel',required=True,help='Channel to use')
-parser.add_argument('-d','--device',action='store',dest='device',default='/dev/ttyS0',help='Zigbee Radio device')
-parser.add_argument('-e','--epan',action='store',type=lambda s: int(s.replace(':',''),16),dest='epan',required=True,help='The Extended PAN ID of the network to target')
-parser.add_argument('-w','--wireshark',action='store_true',dest='wireshark',required=False,help='The Extended PAN ID of the network to target')
+parser = argparse.ArgumentParser(
+    description='Perform an acknowledge attack against the target network')
+parser.add_argument('-c', '--channel', action='store', type=int,
+                    dest='channel', required=True, help='Channel to use')
+parser.add_argument('-d', '--device', action='store', dest='device',
+                    default='/dev/ttyS0', help='Zigbee Radio device')
+parser.add_argument('-e', '--epan', action='store', type=lambda s: int(s.replace(':', ''), 16),
+                    dest='epan', required=True, help='The Extended PAN ID of the network to target')
+parser.add_argument('-w', '--wireshark', action='store_true', dest='wireshark',
+                    required=False, help='The Extended PAN ID of the network to target')
 args = parser.parse_args()
 
 logo = Logo()
@@ -34,13 +36,15 @@ if args.wireshark:
     wireshark = WiresharkObserver()
     radio.add_observer(wireshark)
 
+
 def handle_interrupt(signal, frame):
     global interrupted
     print_notify("Exiting the current script")
     interrupted = True
 
+
 CHANNEL = args.channel
-TARGET_EPAN=args.epan
+TARGET_EPAN = args.epan
 
 radio.set_channel(CHANNEL)
 

@@ -1,5 +1,3 @@
-import os
-import subprocess
 import hexdump
 
 from zigdiggity.observers.observer import Observer

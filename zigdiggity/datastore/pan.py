@@ -1,6 +1,5 @@
 from base import Base
-from sqlalchemy import Column, Binary, Boolean, Integer, DateTime, BigInteger
-import datetime
+from sqlalchemy import Binary, Column, Integer
 
 class PAN(Base):
     __tablename__ = 'pan'

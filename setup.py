@@ -4,10 +4,10 @@
 import sys
 
 try:
-    from setuptools import setup, Extension
+    from setuptools import setup
 except ImportError:
     print("No setuptools found, attempting to use distutils instead.")
-    from distutils.core import setup, Extension
+    from distutils.core import setup
 
 err = []
 warn = []
@@ -18,7 +18,7 @@ pip_pkgs = []
 
 # Dot15d4 is a dep of some of the newer tools
 try:
-    from scapy.all import Dot15d4
+    pass
 except ImportError:
     warn.append("Scapy 802.15.4 (see README.md)")
     pip_pkgs.append("git+https://github.com/secdev/scapy.git#egg=scapy")
@@ -45,13 +45,13 @@ if len(apt_get_pkgs) > 0 or len(pip_pkgs) > 0:
 if len(err) > 0:
     sys.exit(1)
 
-setup(name        = 'zigdiggity',
-      version     = '2.1.0',
-      description = 'Zigbee Framework and Tools for RaspBee',
-      author = 'Peeps',
-      author_email = 'a@b.c',
-      license   = 'LICENSE',
-      packages  = ['zigdiggity',
+setup(name='zigdiggity',
+      version='2.1.0',
+      description='Zigbee Framework and Tools for RaspBee',
+      author='Peeps',
+      author_email='a@b.c',
+      license='LICENSE',
+      packages=['zigdiggity',
                    'zigdiggity/crypto',
                    'zigdiggity/datastore',
                    'zigdiggity/interface',
@@ -59,6 +59,7 @@ setup(name        = 'zigdiggity',
                    'zigdiggity/observers',
                    'zigdiggity/packets',
                    'zigdiggity/radios'],
-      scripts = [],
-      requires=['hexdump', 'pyserial(>=2.0)', 'pycryptodome', 'rangeparser', 'scapy', 'sqlalchemy'],
+      scripts=[],
+      requires=['hexdump', 'pyserial(>=2.0)', 'pycryptodome',
+                'rangeparser', 'scapy', 'sqlalchemy'],
       )

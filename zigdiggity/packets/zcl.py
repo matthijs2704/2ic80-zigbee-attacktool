@@ -1,4 +1,4 @@
-from zigdiggity.packets.utils import extended_address, address, pan, extended_pan, extended_address_bytes
+from zigdiggity.packets.utils import address, extended_address, extended_address_bytes, pan
 from zigdiggity.packets.nwk import nwk_stub
 from zigdiggity.packets.dot15d4 import dot15d4_data_stub
 from zigdiggity.packets.security import security_header_stub

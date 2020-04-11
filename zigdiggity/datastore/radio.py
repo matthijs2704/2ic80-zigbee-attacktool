@@ -1,5 +1,5 @@
 from base import Base
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String
 
 class Radio(Base):
     __tablename__='radio'

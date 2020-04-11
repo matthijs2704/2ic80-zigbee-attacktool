@@ -7,7 +7,7 @@ from zigdiggity.packets import *
 import zigdiggity.crypto.utils as crypto_utils
 import argparse
 import time
-from zigdiggity.packets.utils import extended_address, address, pan, extended_pan, extended_address_bytes
+from zigdiggity.packets.utils import extended_address
 
 # Default channel = 20
 parser = argparse.ArgumentParser(description='Perform replay attack, Ctrl+C to exit')

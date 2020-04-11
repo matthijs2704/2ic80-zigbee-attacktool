@@ -1,5 +1,4 @@
 from Crypto.Cipher import AES
-from Crypto.Util import Counter
 import struct
 
 from scapy.layers.dot15d4 import *

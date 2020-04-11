@@ -3,13 +3,8 @@ import os
 import sys
 sys.path.append(os.getcwd() + "/zigdiggity")
 
-import time
-import signal
 import random
 import argparse
-import hexdump
-from scapy.layers.dot15d4 import *
-from scapy.layers.zigbee import *
 
 from zigdiggity.radios.raspbee_radio import RaspbeeRadio
 from zigdiggity.radios.observer_radio import ObserverRadio

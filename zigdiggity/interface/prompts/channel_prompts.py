@@ -1,4 +1,4 @@
-from zigdiggity.interface.colors import *
+from zigdiggity.interface.colors import console_prompt, print_error
 
 def single_channel_prompt():
     channel = 0

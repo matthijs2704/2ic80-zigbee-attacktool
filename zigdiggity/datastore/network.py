@@ -1,5 +1,5 @@
 from base import Base
-from sqlalchemy import Column, Binary, Boolean, Integer, DateTime, BigInteger
+from sqlalchemy import Binary, Boolean, Column, DateTime, Integer
 import datetime
 
 class Network(Base):

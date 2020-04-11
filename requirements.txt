@@ -4,3 +4,4 @@ pycryptodome
 argparse
 pyserial
 hexdump
+PyInquirer
