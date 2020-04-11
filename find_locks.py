@@ -57,8 +57,8 @@ def findLights(radio, channel):
         if timer.time_passed() > 15 and traffic_counter == 0:
             print_info("No traffic observed for 15 seconds, giving up")
             break
-    print(trackers.keys())
-    print(last_sequence_number)
+    # print(trackers.keys())
+    # print(last_sequence_number)
 
     gateways = dict()
     for pan in trackers:
@@ -77,14 +77,14 @@ def findLights(radio, channel):
 
         gateways[pan] = gateway
         print_notify(
-            "Device 0x%04x on PAN 0x%04x resembles a gateway" % (gateway, pan))
+            "Device 0x%04x on PAN 0x%04x possibly resembles a gateway" % (gateway, pan))
 
     result = dict()
     result[pan] = dict()
     result[pan]['devices'] = list(trackers[pan].keys())
     result[pan]['last_sequence_number'] = last_sequence_number[pan]
     result[pan]['coordinator'] = gateways[pan]
-    print(result)
+    # print(result)
     return result
     # result[pan]['extended_panid'] = extended_panids[pan]
     # return result
