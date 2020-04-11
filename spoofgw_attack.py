@@ -19,14 +19,7 @@ from zigdiggity.radios.raspbee_radio import RaspbeeRadio
 import find_locks
 
 
-class NumberValidator(Validator):
-    def validate(self, document):
-        try:
-            int(document.text)
-        except ValueError:
-            raise ValidationError(
-                message='Please enter a number',
-                cursor_position=len(document.text))  # Move cursor to end
+
 
 
 def prepare_attack(radio, channel, automated):
