@@ -539,7 +539,8 @@ class ZigbeeAppDataPayload(Packet):
         # Destination endpoint (0/1 octet)
          ConditionalField(
              ByteField("dst_endpoint", 10),
-             lambda pkt: ((pkt.frame_control.ack_req or pkt.aps_frametype == 2) and pkt.delivery_mode != 3)
+             lambda pkt: (
+                 (pkt.frame_control.ack_req or pkt.aps_frametype == 2) and pkt.delivery_mode != 3)
          ),
         # Group address (0/2 octets) TODO
         ConditionalField(
@@ -687,7 +688,24 @@ class ZigBeeBeacon(Packet):
     ]
 
 
+class ZigbeeDeviceProfile(Packet):
+    name = "Zigbee Device Profile (ZDP) frame"
+    fields_desc = [
+        # sequence number (8 bits)
+        ByteField("sequence_number", 0),
+        # Device short address
+        dot15d4AddressField("extended_address", 0, adjust=lambda pkt, x: 8),
+        # flags 1 octet
+        FlagsField("frame_control", 0, 8,
+                   ['reserved1', 'reserved2', 'reserved3', 'reserved4', 'remove_children', 'rejoin']),
+    ]
+
+    def guess_payload_class(self, payload):
+        return Packet.guess_payload_class(self, payload)
+
 # Inter-PAN Transmission #
+
+
 class ZigbeeNWKStub(Packet):
     name = "Zigbee Network Layer for Inter-PAN Transmission"
     fields_desc = [
@@ -915,7 +933,7 @@ class ZigbeeClusterLibrary(Packet):
         ByteField("transaction_sequence", 0),
         # Command identifier (8 bits): the cluster command
         ByteEnumField("command_identifier", 0, _zcl_command_frames),
-        
+
     ]
 
     def guess_payload_class(self, payload):
