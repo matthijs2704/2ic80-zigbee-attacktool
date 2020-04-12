@@ -1,5 +1,5 @@
 # 2IC80 Zigbee Attack tool
-For our final deliverable, we decided to build an attack tool that can be executed via a Command Line Interface. We settled on using Python as the programming language, as it has great API for sending and decoding packets using Scapy, as we have already seen in the course's lab sessions. As mentioned before, our tool is built on top of the ZigDiggity Zigbee hacking toolkit created by Bishop Fox. Check out ![ZigDiggity][https://github.com/BishopFox/zigdiggity].
+For our final deliverable, we decided to build an attack tool that can be executed via a Command Line Interface. We settled on using Python as the programming language, as it has great API for sending and decoding packets using Scapy, as we have already seen in the course's lab sessions. As mentioned before, our tool is built on top of the ZigDiggity Zigbee hacking toolkit created by Bishop Fox. Check out ![ZigDiggity](https://github.com/BishopFox/zigdiggity). We have modified they project code to allow it to work with the Zigbee Lighting Link protocol. 
 
 ## Installation
 
